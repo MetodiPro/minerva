@@ -4,24 +4,16 @@
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
-// Chiave API di OpenAI configurata direttamente nel codice per l'utilizzo su server AWS
-// Sostituire 'INSERISCI_QUI_LA_TUA_CHIAVE_API' con la tua chiave API reale
-const OPENAI_API_KEY = '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';
-
-// Recupera la chiave API configurata direttamente nel codice
+// Ottiene la chiave API dalle variabili d'ambiente
+// È necessario utilizzare il prefisso VITE_ per le variabili d'ambiente accessibili dal frontend
 const getApiKey = () => {
-  return OPENAI_API_KEY;
-};
-
-// Funzione mantenuta per retrocompatibilità ma non più utilizzata
-const saveApiKey = (apiKey, remember = true) => {
-  console.log('La chiave API è ora configurata direttamente nel codice e non può essere modificata dall\'interfaccia utente.');
-  return;
+  return import.meta.env.VITE_OPENAI_API_KEY || '';
 };
 
 // Verifica se la chiave API è configurata
 const isConfigured = () => {
-  return OPENAI_API_KEY !== 'INSERISCI_QUI_LA_TUA_CHIAVE_API';
+  const apiKey = getApiKey();
+  return apiKey && apiKey.trim() !== '' && !apiKey.includes('INSERISCI_QUI');
 };
 
 /**
@@ -34,7 +26,7 @@ const generateReadmeFromProject = async (project, notes) => {
   const apiKey = getApiKey();
   
   if (!apiKey) {
-    throw new Error('API key non configurata. Configura la tua chiave API OpenAI nelle impostazioni.');
+    throw new Error('API key non configurata. Configura la tua chiave API OpenAI nelle impostazioni o nelle variabili d\'ambiente.');
   }
   
   if (!project) {
@@ -105,7 +97,7 @@ const generateReadmeFromNotes = async (notes) => {
   const apiKey = getApiKey();
   
   if (!apiKey) {
-    throw new Error('API key non configurata. Configura la tua chiave API OpenAI nelle impostazioni.');
+    throw new Error('API key non configurata. Configura la tua chiave API OpenAI nelle impostazioni o nelle variabili d\'ambiente.');
   }
   
   if (!notes || notes.length === 0) {
@@ -159,4 +151,4 @@ const generateReadmeFromNotes = async (notes) => {
   }
 };
 
-export { generateReadmeFromNotes, generateReadmeFromProject, getApiKey, saveApiKey, isConfigured };
+export { generateReadmeFromNotes, generateReadmeFromProject, getApiKey, isConfigured };
