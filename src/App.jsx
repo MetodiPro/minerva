@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react'
 import { Box, Container, Typography, Paper, Grid, Tabs, Tab, Divider } from '@mui/material'
 import NoteEditor from './components/NoteEditor'
@@ -7,20 +8,56 @@ import Dashboard from './components/Dashboard'
 import Header from './components/Header'
 import ProjectManager from './components/ProjectManager'
 import ProjectAnalysis from './components/ProjectAnalysis'
+import Login from './components/Login'
 
 function App() {
   const [notes, setNotes] = useState([]);
-  
   const [projects, setProjects] = useState([]);
-  
   const [activeTab, setActiveTab] = useState('dashboard');
   const [editingNote, setEditingNote] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Verifica se l'utente è autenticato al caricamento
+  useEffect(() => {
+    const auth = localStorage.getItem('minerva_authenticated');
+    if (auth === 'true') {
+      setIsAuthenticated(true);
+    }
+    
+    // Carica le note e i progetti dal localStorage
+    const savedNotes = localStorage.getItem('minerva_notes');
+    const savedProjects = localStorage.getItem('minerva_projects');
+    
+    if (savedNotes) {
+      try {
+        setNotes(JSON.parse(savedNotes));
+      } catch (e) {
+        console.error('Errore nel parsing delle note:', e);
+      }
+    }
+    
+    if (savedProjects) {
+      try {
+        setProjects(JSON.parse(savedProjects));
+      } catch (e) {
+        console.error('Errore nel parsing dei progetti:', e);
+      }
+    }
+  }, []);
   
   // Salva le note nel localStorage quando cambiano
-  
+  useEffect(() => {
+    if (notes.length > 0) {
+      localStorage.setItem('minerva_notes', JSON.stringify(notes));
+    }
+  }, [notes]);
   
   // Salva i progetti nel localStorage quando cambiano
-  
+  useEffect(() => {
+    if (projects.length > 0) {
+      localStorage.setItem('minerva_projects', JSON.stringify(projects));
+    }
+  }, [projects]);
   
   const handleSaveNote = (newNote) => {
     if (editingNote) {
@@ -68,15 +105,20 @@ function App() {
   
   const handleDeleteProject = (projectToDelete) => {
     setProjects(projects.filter(project => project.id !== projectToDelete.id));
-    localStorage.removeItem('minerva_notes');
-    localStorage.removeItem('minerva_projects');
-    setNotes([]);
-    setProjects([]);
   };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('minerva_authenticated');
+    setIsAuthenticated(false);
+  };
+  
+  if (!isAuthenticated) {
+    return <Login onLogin={setIsAuthenticated} />;
+  }
   
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
       
       <Container maxWidth="lg" sx={{ flex: 1, py: 2 }}>
         {activeTab === 'editor' ? (
